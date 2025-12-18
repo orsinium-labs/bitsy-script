@@ -36,8 +36,8 @@ impl Inventory {
         0
     }
 
-    pub fn get(&mut self, id: ID) -> u8 {
-        for item in &mut self.items {
+    pub fn get(&self, id: ID) -> u8 {
+        for item in &self.items {
             if item.id == id {
                 return item.qty;
             }

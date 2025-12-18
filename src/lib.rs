@@ -7,8 +7,10 @@ mod state;
 mod tokenizer;
 #[cfg(test)]
 mod tokenizer_test;
+mod vars;
 
 pub use dialog::*;
 pub use inventory::*;
 pub use state::*;
 pub use tokenizer::*;
+pub use vars::*;

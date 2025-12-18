@@ -16,4 +16,5 @@ pub struct State {
     pub pos_y: u8,
     pub avatar: ID,
     pub inventory: Inventory,
+    pub vars: Vars,
 }
