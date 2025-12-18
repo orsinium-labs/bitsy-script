@@ -28,6 +28,18 @@ pub enum Tag {
     End,
     /// Print the variable value.
     Say(String),
+    /// Draw tile.
+    DrwT(String),
+    /// Draw sprite.
+    DrwS(String),
+    /// Draw item.
+    DrwI(String),
+    /// Change room's current palette.
+    Pal(String),
+    /// Make avatar look like the given sprite.
+    Ava(String),
+    // Move player to the given room.
+    Exit(String),
     /// Unsupported tag.
     Unknown,
 }
@@ -130,7 +142,13 @@ fn parse_tag_value(word: &str) -> Tag {
                 "2" => Tag::Eff(TextEffect::Color(3)),
                 _ => Tag::Eff(TextEffect::Color(1)),
             },
-            "say" => Tag::Say(args.to_string()),
+            "say" | "print" => Tag::Say(args.to_string()),
+            "drwt" | "printTile" => Tag::DrwT(args.to_string()),
+            "drws" | "printSprite" => Tag::DrwS(args.to_string()),
+            "drwi" | "printItem" => Tag::DrwI(args.to_string()),
+            "ava" => Tag::Ava(args.to_string()),
+            "pal" => Tag::Pal(args.to_string()),
+            "exit" => Tag::Exit(args.to_string()),
             _ => Tag::Unknown,
         };
         return tag;
