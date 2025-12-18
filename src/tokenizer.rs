@@ -77,7 +77,14 @@ impl<'a> Iterator for Tokenizer<'a> {
                         if word.starts_with("{/") {
                             return Some(Token::CloseTag(Tag::Unknown));
                         }
-                        let tag = match word.as_str() {
+                        word.pop(); // remove "}" from the end.
+                        let mut word = &word[1..]; // remove "{" from the beginning.
+                        let is_closing = word.starts_with('/');
+                        if is_closing {
+                            word = &word[1..];
+                        }
+                        word = word.trim_ascii();
+                        let tag = match word {
                             "{br}" => Tag::Br,
                             "{pg}" => Tag::Pg,
                             "{clr1}" => Tag::Eff(TextEffect::Color(1)),
@@ -91,7 +98,11 @@ impl<'a> Iterator for Tokenizer<'a> {
                             "{rbw}" => Tag::Eff(TextEffect::Rainbow),
                             _ => Tag::Unknown,
                         };
-                        let token = Token::OpenTag(tag);
+                        let token = if is_closing {
+                            Token::CloseTag(tag)
+                        } else {
+                            Token::OpenTag(tag)
+                        };
                         return Some(token);
                     }
                     found_letter = true
