@@ -154,17 +154,17 @@ fn parse_tag_value(word: &str) -> Tag {
                 if let Some(args) = args.strip_prefix("{item") {
                     let args = args.strip_suffix('}').unwrap_or(args);
                     let args = args.trim_ascii();
-                    let args = args.trim_matches('"');
+                    let args = unquote(args);
                     Tag::SayItem(args.to_string())
                 } else {
                     Tag::SayVar(args.to_string())
                 }
             }
-            "drwt" | "printTile" => Tag::DrwT(args.to_string()),
-            "drws" | "printSprite" => Tag::DrwS(args.to_string()),
-            "drwi" | "printItem" => Tag::DrwI(args.to_string()),
-            "ava" => Tag::Ava(args.to_string()),
-            "pal" => Tag::Pal(args.to_string()),
+            "drwt" | "printTile" => Tag::DrwT(unquote(args).to_string()),
+            "drws" | "printSprite" => Tag::DrwS(unquote(args).to_string()),
+            "drwi" | "printItem" => Tag::DrwI(unquote(args).to_string()),
+            "ava" => Tag::Ava(unquote(args).to_string()),
+            "pal" => Tag::Pal(unquote(args).to_string()),
             "exit" => {
                 let (room, x, y) = parse_exit_args(args);
                 let room = room.to_string();
@@ -191,14 +191,22 @@ fn parse_tag_value(word: &str) -> Tag {
 }
 
 fn parse_exit_args(args: &str) -> (&str, u8, u8) {
+    let args = unquote(args);
     let (room, args) = args.split_once(',').unwrap_or((args, "0,0"));
-    let room = room.strip_prefix('"').unwrap_or(room);
-    let room = room.strip_suffix('"').unwrap_or(room);
-    let args = args.strip_suffix('"').unwrap_or(args);
+    let room = unquote(room);
     let (x, y) = args.split_once(',').unwrap_or(("0", "0"));
     let x = x.trim_ascii();
     let y = y.trim_ascii();
     let x: u8 = x.parse().unwrap_or_default();
     let y: u8 = y.parse().unwrap_or_default();
     (room, x, y)
+}
+
+fn unquote(v: &str) -> &str {
+    if v.starts_with('"') && v.ends_with('"') {
+        let v = &v[1..];
+        &v[..v.len() - 1]
+    } else {
+        v
+    }
 }
