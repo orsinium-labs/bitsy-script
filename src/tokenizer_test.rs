@@ -33,6 +33,18 @@ fn test_tokenizer() {
     check("{clr 1}", vec![OpenTag(Eff(TextEffect::Color(2)))]);
     check("{say hi}", vec![OpenTag(Say("hi".to_string()))]);
     check("{ say  hi }", vec![OpenTag(Say("hi".to_string()))]);
+    check(
+        r#"{exit "hi,3,4"}"#,
+        vec![OpenTag(Exit("hi".to_string(), 3, 4))],
+    );
+    check(
+        r#"{exit "hi",3,4}"#,
+        vec![OpenTag(Exit("hi".to_string(), 3, 4))],
+    );
+    check(
+        r#"{exit "hi", 3, 4}"#,
+        vec![OpenTag(Exit("hi".to_string(), 3, 4))],
+    );
 }
 
 fn w(w: &str) -> Token {

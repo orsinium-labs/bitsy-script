@@ -2,6 +2,8 @@ use alloc::string::String;
 use alloc::string::ToString;
 use core::str::Chars;
 
+pub type ID = String;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TextEffect {
     /// No effects.
@@ -29,17 +31,17 @@ pub enum Tag {
     /// Print the variable value.
     Say(String),
     /// Draw tile.
-    DrwT(String),
+    DrwT(ID),
     /// Draw sprite.
-    DrwS(String),
+    DrwS(ID),
     /// Draw item.
-    DrwI(String),
+    DrwI(ID),
     /// Change room's current palette.
-    Pal(String),
+    Pal(ID),
     /// Make avatar look like the given sprite.
-    Ava(String),
+    Ava(ID),
     // Move player to the given room.
-    Exit(String),
+    Exit(ID, u8, u8),
     /// Unsupported tag.
     Unknown,
 }
@@ -148,7 +150,11 @@ fn parse_tag_value(word: &str) -> Tag {
             "drwi" | "printItem" => Tag::DrwI(args.to_string()),
             "ava" => Tag::Ava(args.to_string()),
             "pal" => Tag::Pal(args.to_string()),
-            "exit" => Tag::Exit(args.to_string()),
+            "exit" => {
+                let (room, x, y) = parse_exit_args(args);
+                let room = room.to_string();
+                Tag::Exit(room, x, y)
+            }
             _ => Tag::Unknown,
         };
         return tag;
@@ -167,4 +173,17 @@ fn parse_tag_value(word: &str) -> Tag {
         "end" => Tag::End,
         _ => Tag::Unknown,
     }
+}
+
+fn parse_exit_args(args: &str) -> (&str, u8, u8) {
+    let (room, args) = args.split_once(',').unwrap_or((args, "0,0"));
+    let room = room.strip_prefix('"').unwrap_or(room);
+    let room = room.strip_suffix('"').unwrap_or(room);
+    let args = args.strip_suffix('"').unwrap_or(args);
+    let (x, y) = args.split_once(',').unwrap_or(("0", "0"));
+    let x = x.trim_ascii();
+    let y = y.trim_ascii();
+    let x: u8 = x.parse().unwrap_or_default();
+    let y: u8 = y.parse().unwrap_or_default();
+    (room, x, y)
 }
