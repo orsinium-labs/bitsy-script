@@ -15,18 +15,20 @@ pub enum TextEffect {
     Color(u8),
 }
 
-pub(crate) enum Token {
+pub enum Tag {
     /// Line break tag.
-    TagBr,
+    Br,
     /// Page break tag.
-    TagPg,
+    Pg,
     /// Text effect tag.
-    TagEff(TextEffect),
+    Eff(TextEffect),
     /// Unsupported tag.
-    TagUnknown,
-    /// A closing tag.
-    CloseTag,
-    /// A plaintext word.
+    Unknown,
+}
+
+pub(crate) enum Token {
+    OpenTag(Tag),
+    CloseTag(Tag),
     Word(String),
 }
 
@@ -61,7 +63,7 @@ impl<'a> Iterator for Tokenizer<'a> {
             };
             word.push(ch);
             match ch {
-                '\n' => return Some(Token::TagBr),
+                '\n' => return Some(Token::OpenTag(Tag::Br)),
                 '{' => {
                     if found_letter {
                         self.stash = Some('{');
@@ -73,22 +75,23 @@ impl<'a> Iterator for Tokenizer<'a> {
                 '}' => {
                     if inside_tag {
                         if word.starts_with("{/") {
-                            return Some(Token::CloseTag);
+                            return Some(Token::CloseTag(Tag::Unknown));
                         }
-                        let token = match word.as_str() {
-                            "{br}" => Token::TagBr,
-                            "{pg}" => Token::TagPg,
-                            "{clr1}" => Token::TagEff(TextEffect::Color(1)),
-                            "{clr2}" => Token::TagEff(TextEffect::Color(2)),
-                            "{clr3}" => Token::TagEff(TextEffect::Color(3)),
-                            "{clr 1}" => Token::TagEff(TextEffect::Color(1)),
-                            "{clr 2}" => Token::TagEff(TextEffect::Color(2)),
-                            "{clr 3}" => Token::TagEff(TextEffect::Color(3)),
-                            "{wvy}" => Token::TagEff(TextEffect::Wavy),
-                            "{shk}" => Token::TagEff(TextEffect::Shaky),
-                            "{rbw}" => Token::TagEff(TextEffect::Rainbow),
-                            _ => Token::TagUnknown,
+                        let tag = match word.as_str() {
+                            "{br}" => Tag::Br,
+                            "{pg}" => Tag::Pg,
+                            "{clr1}" => Tag::Eff(TextEffect::Color(1)),
+                            "{clr2}" => Tag::Eff(TextEffect::Color(2)),
+                            "{clr3}" => Tag::Eff(TextEffect::Color(3)),
+                            "{clr 1}" => Tag::Eff(TextEffect::Color(1)),
+                            "{clr 2}" => Tag::Eff(TextEffect::Color(2)),
+                            "{clr 3}" => Tag::Eff(TextEffect::Color(3)),
+                            "{wvy}" => Tag::Eff(TextEffect::Wavy),
+                            "{shk}" => Tag::Eff(TextEffect::Shaky),
+                            "{rbw}" => Tag::Eff(TextEffect::Rainbow),
+                            _ => Tag::Unknown,
                         };
+                        let token = Token::OpenTag(tag);
                         return Some(token);
                     }
                     found_letter = true
