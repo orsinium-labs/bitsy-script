@@ -76,36 +76,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                 }
                 '}' => {
                     if inside_tag {
-                        if word.starts_with("{/") {
-                            return Some(Token::CloseTag(Tag::Unknown));
-                        }
-                        word.pop(); // remove "}" from the end.
-                        let mut word = &word[1..]; // remove "{" from the beginning.
-                        let is_closing = word.starts_with('/');
-                        if is_closing {
-                            word = &word[1..];
-                        }
-                        word = word.trim_ascii();
-                        let tag = match word {
-                            "br" => Tag::Br,
-                            "pg" => Tag::Pg,
-                            "clr1" => Tag::Eff(TextEffect::Color(1)),
-                            "clr2" => Tag::Eff(TextEffect::Color(2)),
-                            "clr3" => Tag::Eff(TextEffect::Color(3)),
-                            "clr 0" => Tag::Eff(TextEffect::Color(1)),
-                            "clr 1" => Tag::Eff(TextEffect::Color(2)),
-                            "clr 2" => Tag::Eff(TextEffect::Color(3)),
-                            "wvy" => Tag::Eff(TextEffect::Wavy),
-                            "shk" => Tag::Eff(TextEffect::Shaky),
-                            "rbw" => Tag::Eff(TextEffect::Rainbow),
-                            _ => Tag::Unknown,
-                        };
-                        let token = if is_closing {
-                            Token::CloseTag(tag)
-                        } else {
-                            Token::OpenTag(tag)
-                        };
-                        return Some(token);
+                        return Some(parse_tag(&word));
                     }
                     found_letter = true
                 }
@@ -121,5 +92,39 @@ impl<'a> Iterator for Tokenizer<'a> {
             return None;
         }
         Some(Token::Word(word))
+    }
+}
+
+fn parse_tag(word: &str) -> Token {
+    let word = &word[..word.len() - 1]; // remove "}" from the end.
+    let mut word = &word[1..]; // remove "{" from the beginning.
+    word = word.trim_ascii();
+    let is_closing = word.starts_with('/');
+    if is_closing {
+        word = &word[1..];
+        word = word.trim_ascii();
+    }
+    let tag = parse_tag_value(word);
+    if is_closing {
+        Token::CloseTag(tag)
+    } else {
+        Token::OpenTag(tag)
+    }
+}
+
+fn parse_tag_value(word: &str) -> Tag {
+    match word {
+        "br" => Tag::Br,
+        "pg" => Tag::Pg,
+        "clr1" => Tag::Eff(TextEffect::Color(1)),
+        "clr2" => Tag::Eff(TextEffect::Color(2)),
+        "clr3" => Tag::Eff(TextEffect::Color(3)),
+        "clr 0" => Tag::Eff(TextEffect::Color(1)),
+        "clr 1" => Tag::Eff(TextEffect::Color(2)),
+        "clr 2" => Tag::Eff(TextEffect::Color(3)),
+        "wvy" => Tag::Eff(TextEffect::Wavy),
+        "shk" => Tag::Eff(TextEffect::Shaky),
+        "rbw" => Tag::Eff(TextEffect::Rainbow),
+        _ => Tag::Unknown,
     }
 }
