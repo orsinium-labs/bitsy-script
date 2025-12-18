@@ -1,4 +1,5 @@
 use alloc::string::String;
+use alloc::string::ToString;
 use core::str::Chars;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -15,14 +16,18 @@ pub enum TextEffect {
     Color(u8),
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Tag {
-    /// Line break tag.
+    /// Line break.
     Br,
-    /// Page break tag.
+    /// Page break.
     Pg,
-    /// Text effect tag.
+    /// Apply style effect to text.
     Eff(TextEffect),
+    /// End the game.
+    End,
+    /// Print the variable value.
+    Say(String),
     /// Unsupported tag.
     Unknown,
 }
@@ -113,18 +118,35 @@ fn parse_tag(word: &str) -> Token {
 }
 
 fn parse_tag_value(word: &str) -> Tag {
-    match word {
+    let (name, args) = word.split_once(' ').unwrap_or((word, ""));
+
+    // Parse tags with arguments
+    let args = args.trim_ascii();
+    if !args.is_empty() {
+        let tag = match name {
+            "clr" => match args {
+                "0" => Tag::Eff(TextEffect::Color(1)),
+                "1" => Tag::Eff(TextEffect::Color(2)),
+                "2" => Tag::Eff(TextEffect::Color(3)),
+                _ => Tag::Eff(TextEffect::Color(1)),
+            },
+            "say" => Tag::Say(args.to_string()),
+            _ => Tag::Unknown,
+        };
+        return tag;
+    }
+
+    // Parse tags without arguments
+    match name {
         "br" => Tag::Br,
         "pg" => Tag::Pg,
         "clr1" => Tag::Eff(TextEffect::Color(1)),
         "clr2" => Tag::Eff(TextEffect::Color(2)),
         "clr3" => Tag::Eff(TextEffect::Color(3)),
-        "clr 0" => Tag::Eff(TextEffect::Color(1)),
-        "clr 1" => Tag::Eff(TextEffect::Color(2)),
-        "clr 2" => Tag::Eff(TextEffect::Color(3)),
         "wvy" => Tag::Eff(TextEffect::Wavy),
         "shk" => Tag::Eff(TextEffect::Shaky),
         "rbw" => Tag::Eff(TextEffect::Rainbow),
+        "end" => Tag::End,
         _ => Tag::Unknown,
     }
 }

@@ -22,6 +22,17 @@ fn test_tokenizer() {
     check("{/pg }", vec![CloseTag(Pg)]);
     check("{/ pg }", vec![CloseTag(Pg)]);
     check("{ / pg }", vec![CloseTag(Pg)]);
+
+    check("{br}{br}", vec![OpenTag(Br), OpenTag(Br)]);
+    check(
+        "oh{br}hi{br}mark",
+        vec![w("oh"), OpenTag(Br), w("hi"), OpenTag(Br), w("mark")],
+    );
+
+    check("{clr1}", vec![OpenTag(Eff(TextEffect::Color(1)))]);
+    check("{clr 1}", vec![OpenTag(Eff(TextEffect::Color(2)))]);
+    check("{say hi}", vec![OpenTag(Say("hi".to_string()))]);
+    check("{ say  hi }", vec![OpenTag(Say("hi".to_string()))]);
 }
 
 fn w(w: &str) -> Token {
