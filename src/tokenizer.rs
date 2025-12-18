@@ -1,7 +1,7 @@
 use alloc::string::String;
 use core::str::Chars;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TextEffect {
     /// No effects.
     None,
@@ -15,6 +15,7 @@ pub enum TextEffect {
     Color(u8),
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Tag {
     /// Line break tag.
     Br,
@@ -26,13 +27,14 @@ pub enum Tag {
     Unknown,
 }
 
-pub(crate) enum Token {
+#[derive(Debug, Clone, PartialEq)]
+pub enum Token {
     OpenTag(Tag),
     CloseTag(Tag),
     Word(String),
 }
 
-pub(crate) struct Tokenizer<'a> {
+pub struct Tokenizer<'a> {
     buffer: Chars<'a>,
     stash: Option<char>,
 }
@@ -85,17 +87,17 @@ impl<'a> Iterator for Tokenizer<'a> {
                         }
                         word = word.trim_ascii();
                         let tag = match word {
-                            "{br}" => Tag::Br,
-                            "{pg}" => Tag::Pg,
-                            "{clr1}" => Tag::Eff(TextEffect::Color(1)),
-                            "{clr2}" => Tag::Eff(TextEffect::Color(2)),
-                            "{clr3}" => Tag::Eff(TextEffect::Color(3)),
-                            "{clr 1}" => Tag::Eff(TextEffect::Color(1)),
-                            "{clr 2}" => Tag::Eff(TextEffect::Color(2)),
-                            "{clr 3}" => Tag::Eff(TextEffect::Color(3)),
-                            "{wvy}" => Tag::Eff(TextEffect::Wavy),
-                            "{shk}" => Tag::Eff(TextEffect::Shaky),
-                            "{rbw}" => Tag::Eff(TextEffect::Rainbow),
+                            "br" => Tag::Br,
+                            "pg" => Tag::Pg,
+                            "clr1" => Tag::Eff(TextEffect::Color(1)),
+                            "clr2" => Tag::Eff(TextEffect::Color(2)),
+                            "clr3" => Tag::Eff(TextEffect::Color(3)),
+                            "clr 0" => Tag::Eff(TextEffect::Color(1)),
+                            "clr 1" => Tag::Eff(TextEffect::Color(2)),
+                            "clr 2" => Tag::Eff(TextEffect::Color(3)),
+                            "wvy" => Tag::Eff(TextEffect::Wavy),
+                            "shk" => Tag::Eff(TextEffect::Shaky),
+                            "rbw" => Tag::Eff(TextEffect::Rainbow),
                             _ => Tag::Unknown,
                         };
                         let token = if is_closing {
