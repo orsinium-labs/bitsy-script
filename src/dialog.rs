@@ -4,6 +4,7 @@ use alloc::vec::Vec;
 
 pub struct Dialog {
     pub pages: Vec<Page>,
+    pub actions: Vec<Action>,
 }
 
 pub struct Page {
@@ -14,7 +15,9 @@ pub struct Line {
     pub words: Vec<Word>,
 }
 
-pub struct Word {
-    pub text: String,
-    pub effect: TextEffect,
+pub enum Word {
+    Text(String, TextEffect),
+    Sprite(ID),
+    Tile(ID),
+    Item(ID),
 }
