@@ -29,11 +29,21 @@ fn test_tokenizer() {
         vec![w("oh"), OpenTag(Br), w("hi"), OpenTag(Br), w("mark")],
     );
 
-    check("{blegh}", vec![OpenTag(Unknown("blegh".to_string()))]);
-    check("{ blegh }", vec![OpenTag(Unknown("blegh".to_string()))]);
+    check(
+        "{blegh}",
+        vec![OpenTag(Unknown("blegh".to_string(), "".to_string()))],
+    );
+    check(
+        "{ blegh }",
+        vec![OpenTag(Unknown("blegh".to_string(), "".to_string()))],
+    );
     check(
         "{ blegh args }",
-        vec![OpenTag(Unknown("blegh args".to_string()))],
+        vec![OpenTag(Unknown("blegh".to_string(), "args".to_string()))],
+    );
+    check(
+        "{ blegh    args }",
+        vec![OpenTag(Unknown("blegh".to_string(), "args".to_string()))],
     );
     check("{clr1}", vec![OpenTag(Eff(TextEffect::Color(1)))]);
     check("{clr 1}", vec![OpenTag(Eff(TextEffect::Color(2)))]);

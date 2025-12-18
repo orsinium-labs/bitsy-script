@@ -45,7 +45,7 @@ pub enum Tag {
     // Move player to the given room.
     Exit(ID, u8, u8),
     /// Unsupported tag.
-    Unknown(String),
+    Unknown(String, String),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -170,7 +170,7 @@ fn parse_tag_value(word: &str) -> Tag {
                 let room = room.to_string();
                 Tag::Exit(room, x, y)
             }
-            _ => Tag::Unknown(word.to_string()),
+            _ => Tag::Unknown(name.to_string(), args.to_string()),
         };
         return tag;
     }
@@ -186,7 +186,7 @@ fn parse_tag_value(word: &str) -> Tag {
         "shk" => Tag::Eff(TextEffect::Shaky),
         "rbw" => Tag::Eff(TextEffect::Rainbow),
         "end" => Tag::End,
-        _ => Tag::Unknown(name.to_string()),
+        _ => Tag::Unknown(name.to_string(), "".to_string()),
     }
 }
 
