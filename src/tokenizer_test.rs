@@ -31,8 +31,12 @@ fn test_tokenizer() {
 
     check("{clr1}", vec![OpenTag(Eff(TextEffect::Color(1)))]);
     check("{clr 1}", vec![OpenTag(Eff(TextEffect::Color(2)))]);
-    check("{say hi}", vec![OpenTag(Say("hi".to_string()))]);
-    check("{ say  hi }", vec![OpenTag(Say("hi".to_string()))]);
+    check("{say hi}", vec![OpenTag(SayVar("hi".to_string()))]);
+    check("{ say  hi }", vec![OpenTag(SayVar("hi".to_string()))]);
+    check(
+        r#"{say {item "cat"}}"#,
+        vec![OpenTag(SayItem("cat".to_string()))],
+    );
     check(
         r#"{exit "hi,3,4"}"#,
         vec![OpenTag(Exit("hi".to_string(), 3, 4))],

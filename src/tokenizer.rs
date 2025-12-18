@@ -29,7 +29,9 @@ pub enum Tag {
     /// End the game.
     End,
     /// Print the variable value.
-    Say(String),
+    SayVar(String),
+    // say the item quantity in inventory.
+    SayItem(String),
     /// Draw tile.
     DrwT(ID),
     /// Draw sprite.
@@ -73,7 +75,7 @@ impl<'a> Iterator for Tokenizer<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let mut word = String::new();
         let mut found_letter = false;
-        let mut inside_tag = false;
+        let mut open_tags: u8 = 0;
         loop {
             let ch = if let Some(stash) = self.stash.take() {
                 stash
@@ -86,21 +88,25 @@ impl<'a> Iterator for Tokenizer<'a> {
             match ch {
                 '\n' => return Some(Token::OpenTag(Tag::Br)),
                 '{' => {
-                    if found_letter {
+                    if open_tags == 0 && found_letter {
                         self.stash = Some('{');
                         word.pop();
                         break;
                     }
-                    inside_tag = true;
+                    open_tags += 1;
                 }
                 '}' => {
-                    if inside_tag {
-                        return Some(parse_tag(&word));
+                    if open_tags != 0 {
+                        open_tags -= 1;
+                        if open_tags == 0 {
+                            return Some(parse_tag(&word));
+                        } else {
+                            found_letter = true
+                        }
                     }
-                    found_letter = true
                 }
                 '\t' | '\x0C' | '\r' | ' ' => {
-                    if !inside_tag && found_letter {
+                    if open_tags == 0 && found_letter {
                         break;
                     }
                 }
@@ -144,7 +150,16 @@ fn parse_tag_value(word: &str) -> Tag {
                 "2" => Tag::Eff(TextEffect::Color(3)),
                 _ => Tag::Eff(TextEffect::Color(1)),
             },
-            "say" | "print" => Tag::Say(args.to_string()),
+            "say" | "print" => {
+                if let Some(args) = args.strip_prefix("{item") {
+                    let args = args.strip_suffix('}').unwrap_or(args);
+                    let args = args.trim_ascii();
+                    let args = args.trim_matches('"');
+                    Tag::SayItem(args.to_string())
+                } else {
+                    Tag::SayVar(args.to_string())
+                }
+            }
             "drwt" | "printTile" => Tag::DrwT(args.to_string()),
             "drws" | "printSprite" => Tag::DrwS(args.to_string()),
             "drwi" | "printItem" => Tag::DrwI(args.to_string()),
