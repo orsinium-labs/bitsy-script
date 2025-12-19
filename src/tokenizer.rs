@@ -42,7 +42,7 @@ pub enum Tag {
     Pal(ID),
     /// Make avatar look like the given sprite.
     Ava(ID),
-    // Move player to the given room.
+    /// Move player to the given room.
     Exit(ID, u8, u8),
     /// Unsupported tag.
     Unknown(String, String),
@@ -139,43 +139,47 @@ fn parse_tag(word: &str) -> Token {
 
 fn parse_tag_value(word: &str) -> Tag {
     let (name, args) = word.split_once(' ').unwrap_or((word, ""));
-
-    // Parse tags with arguments
     let args = args.trim_ascii();
-    if !args.is_empty() {
-        let tag = match name {
-            "clr" => match args {
-                "0" => Tag::Eff(TextEffect::Color(1)),
-                "1" => Tag::Eff(TextEffect::Color(2)),
-                "2" => Tag::Eff(TextEffect::Color(3)),
-                _ => Tag::Eff(TextEffect::Color(1)),
-            },
-            "say" | "print" => {
-                if let Some(args) = args.strip_prefix("{item") {
-                    let args = args.strip_suffix('}').unwrap_or(args);
-                    let args = args.trim_ascii();
-                    let args = unquote(args);
-                    Tag::SayItem(args.to_string())
-                } else {
-                    Tag::SayVar(args.to_string())
-                }
-            }
-            "drwt" | "printTile" => Tag::DrwT(unquote(args).to_string()),
-            "drws" | "printSprite" => Tag::DrwS(unquote(args).to_string()),
-            "drwi" | "printItem" => Tag::DrwI(unquote(args).to_string()),
-            "ava" => Tag::Ava(unquote(args).to_string()),
-            "pal" => Tag::Pal(unquote(args).to_string()),
-            "exit" => {
-                let (room, x, y) = parse_exit_args(args);
-                let room = room.to_string();
-                Tag::Exit(room, x, y)
-            }
-            _ => Tag::Unknown(name.to_string(), args.to_string()),
-        };
-        return tag;
+    if args.is_empty() {
+        parse_tag_without_args(name)
+    } else {
+        parse_tag_with_args(name, args)
     }
+}
 
-    // Parse tags without arguments
+fn parse_tag_with_args(name: &str, args: &str) -> Tag {
+    match name {
+        "clr" => match args {
+            "0" => Tag::Eff(TextEffect::Color(1)),
+            "1" => Tag::Eff(TextEffect::Color(2)),
+            "2" => Tag::Eff(TextEffect::Color(3)),
+            _ => Tag::Eff(TextEffect::Color(1)),
+        },
+        "say" | "print" => {
+            if let Some(args) = args.strip_prefix("{item") {
+                let args = args.strip_suffix('}').unwrap_or(args);
+                let args = args.trim_ascii();
+                let args = unquote(args);
+                Tag::SayItem(args.to_string())
+            } else {
+                Tag::SayVar(args.to_string())
+            }
+        }
+        "drwt" | "printTile" => Tag::DrwT(unquote(args).to_string()),
+        "drws" | "printSprite" => Tag::DrwS(unquote(args).to_string()),
+        "drwi" | "printItem" => Tag::DrwI(unquote(args).to_string()),
+        "ava" => Tag::Ava(unquote(args).to_string()),
+        "pal" => Tag::Pal(unquote(args).to_string()),
+        "exit" => {
+            let (room, x, y) = parse_exit_args(args);
+            let room = room.to_string();
+            Tag::Exit(room, x, y)
+        }
+        _ => Tag::Unknown(name.to_string(), args.to_string()),
+    }
+}
+
+fn parse_tag_without_args(name: &str) -> Tag {
     match name {
         "br" => Tag::Br,
         "pg" => Tag::Pg,

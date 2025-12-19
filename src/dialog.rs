@@ -4,11 +4,11 @@ use alloc::vec::Vec;
 
 pub struct Dialog {
     pub pages: Vec<Page>,
-    pub actions: Vec<Action>,
 }
 
 pub struct Page {
     pub lines: Vec<Line>,
+    pub actions: Vec<Action>,
 }
 
 pub struct Line {
