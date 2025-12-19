@@ -1,4 +1,4 @@
-use crate::tokenizer::*;
+use crate::{Val, tokenizer::*};
 
 #[test]
 fn test_tokenizer() {
@@ -64,6 +64,13 @@ fn test_tokenizer() {
     check(
         r#"{exit "hi", 3, 4}"#,
         vec![OpenTag(Exit("hi".to_string(), 3, 4))],
+    );
+
+    let val = Val::S("hello world!".to_string());
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(val));
+    check(
+        "{ a = hello world! }",
+        vec![OpenTag(Set("a".to_string(), expr))],
     );
 }
 

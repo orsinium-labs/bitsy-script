@@ -7,11 +7,13 @@ pub struct Vars {
     items: Vec<Var>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 struct Var {
     name: String,
     val: Val,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Val {
     I(i16),
     S(String),

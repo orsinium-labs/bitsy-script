@@ -1,5 +1,7 @@
+use crate::Val;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 use core::str::Chars;
 
 pub type ID = String;
@@ -44,8 +46,30 @@ pub enum Tag {
     Ava(ID),
     /// Move player to the given room.
     Exit(ID, u8, u8),
+    /// Evaluate the expression and assign its result to the variable.
+    Set(String, Expr),
     /// Unsupported tag.
     Unknown(String, String),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Expr {
+    SimpleExpr(SimpleExpr),
+    Mul(SimpleExpr, SimpleExpr),
+    Div(SimpleExpr, SimpleExpr),
+    Add(SimpleExpr, SimpleExpr),
+    Sub(SimpleExpr, SimpleExpr),
+    Lt(SimpleExpr, SimpleExpr),
+    Gt(SimpleExpr, SimpleExpr),
+    Lte(SimpleExpr, SimpleExpr),
+    Gte(SimpleExpr, SimpleExpr),
+    Eq(SimpleExpr, SimpleExpr),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum SimpleExpr {
+    Var(String),
+    Val(Val),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -148,6 +172,9 @@ fn parse_tag_value(word: &str) -> Tag {
 }
 
 fn parse_tag_with_args(name: &str, args: &str) -> Tag {
+    if args.starts_with('=') {
+        return parse_assign(name, args);
+    }
     match name {
         "clr" => match args {
             "0" => Tag::Eff(TextEffect::Color(1)),
@@ -194,6 +221,21 @@ fn parse_tag_without_args(name: &str) -> Tag {
     }
 }
 
+fn parse_assign(name: &str, args: &str) -> Tag {
+    let args = &args[1..];
+    let args = args.trim_ascii();
+    let parts: Vec<_> = args.split_ascii_whitespace().collect();
+    let expr: Expr = if let Some(part) = unwrap_vec_1(&parts) {
+        todo!()
+    } else if let Some(part) = unwrap_vec_1(&parts) {
+        todo!()
+    } else {
+        let val = Val::S(args.to_string());
+        Expr::SimpleExpr(SimpleExpr::Val(val))
+    };
+    Tag::Set(name.to_string(), expr)
+}
+
 fn parse_exit_args(args: &str) -> (&str, u8, u8) {
     let args = unquote(args);
     let (room, args) = args.split_once(',').unwrap_or((args, "0,0"));
@@ -213,4 +255,18 @@ fn unquote(v: &str) -> &str {
     } else {
         v
     }
+}
+
+fn unwrap_vec_1<'a>(items: &[&'a str]) -> Option<&'a str> {
+    if items.len() != 1 {
+        return None;
+    }
+    Some(items[0])
+}
+
+fn unwrap_vec_3(items: Vec<&str>) -> Option<(&str, &str, &str)> {
+    if items.len() != 3 {
+        return None;
+    }
+    Some((items[0], items[1], items[2]))
 }
