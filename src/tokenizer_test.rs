@@ -72,6 +72,18 @@ fn test_tokenizer() {
         "{ a = hello world! }",
         vec![OpenTag(Set("a".to_string(), expr))],
     );
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::I(14)));
+    check("{a = 14}", vec![OpenTag(Set("a".to_string(), expr))]);
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::I(-14)));
+    check("{a = -14}", vec![OpenTag(Set("a".to_string(), expr))]);
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::I(1)));
+    check("{a = true}", vec![OpenTag(Set("a".to_string(), expr))]);
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::S("hi".to_string())));
+    check(r#"{a = "hi"}"#, vec![OpenTag(Set("a".to_string(), expr))]);
 }
 
 fn w(w: &str) -> Token {

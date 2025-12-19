@@ -223,17 +223,62 @@ fn parse_tag_without_args(name: &str) -> Tag {
 
 fn parse_assign(name: &str, args: &str) -> Tag {
     let args = &args[1..];
+    let expr = parse_expr(args);
+    Tag::Set(name.to_string(), expr)
+}
+
+fn parse_expr(args: &str) -> Expr {
     let args = args.trim_ascii();
     let parts: Vec<_> = args.split_ascii_whitespace().collect();
-    let expr: Expr = if let Some(part) = unwrap_vec_1(&parts) {
-        todo!()
-    } else if let Some(part) = unwrap_vec_1(&parts) {
-        todo!()
+    if let Some(part) = unwrap_vec_1(&parts) {
+        Expr::SimpleExpr(parse_simple_expr(part))
+    } else if let Some((left, op, right)) = unwrap_vec_3(&parts) {
+        let left = parse_simple_expr(left);
+        let right = parse_simple_expr(right);
+        let op = op.trim_ascii();
+        match op {
+            "*" => Expr::Mul(left, right),
+            "/" => Expr::Div(left, right),
+            "+" => Expr::Add(left, right),
+            "-" => Expr::Sub(left, right),
+            "<" => Expr::Lt(left, right),
+            ">" => Expr::Gt(left, right),
+            "<=" => Expr::Lte(left, right),
+            ">=" => Expr::Gte(left, right),
+            "==" => Expr::Eq(left, right),
+            _ => {
+                let val = Val::S(args.to_string());
+                Expr::SimpleExpr(SimpleExpr::Val(val))
+            }
+        }
     } else {
         let val = Val::S(args.to_string());
         Expr::SimpleExpr(SimpleExpr::Val(val))
-    };
-    Tag::Set(name.to_string(), expr)
+    }
+}
+
+fn parse_simple_expr(part: &str) -> SimpleExpr {
+    let part = part.trim_ascii();
+    if part == "true" {
+        return SimpleExpr::Val(Val::I(1));
+    }
+    if part == "false" {
+        return SimpleExpr::Val(Val::I(0));
+    }
+    if let Ok(i) = part.parse::<i16>() {
+        return SimpleExpr::Val(Val::I(i));
+    }
+    if part.starts_with('"') {
+        return SimpleExpr::Val(Val::S(unquote(part).to_string()));
+    }
+    if is_var(part) {
+        return SimpleExpr::Var(part.to_string());
+    }
+    SimpleExpr::Val(Val::S(part.to_string()))
+}
+
+fn is_var(part: &str) -> bool {
+    todo!()
 }
 
 fn parse_exit_args(args: &str) -> (&str, u8, u8) {
@@ -264,7 +309,7 @@ fn unwrap_vec_1<'a>(items: &[&'a str]) -> Option<&'a str> {
     Some(items[0])
 }
 
-fn unwrap_vec_3(items: Vec<&str>) -> Option<(&str, &str, &str)> {
+fn unwrap_vec_3<'a>(items: &[&'a str]) -> Option<(&'a str, &'a str, &'a str)> {
     if items.len() != 3 {
         return None;
     }
