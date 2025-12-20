@@ -9,6 +9,8 @@ pub struct State {
     pub pos_x: u8,
     pub pos_y: u8,
     pub avatar: ID,
+    pub end: bool,
+
     pub inventory: Inventory,
     pub vars: Vars,
     pub effect: TextEffect,
