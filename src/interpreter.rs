@@ -54,11 +54,11 @@ fn handle_open_tag(tag: Tag, state: &mut State) -> Option<Word> {
             let s = val_to_string(&val);
             return Some(Word::Text(s, state.effect));
         }
-        Tag::DrwT(_) => todo!(),
-        Tag::DrwS(_) => todo!(),
-        Tag::DrwI(_) => todo!(),
-        Tag::Pal(_) => todo!(),
-        Tag::Ava(_) => todo!(),
+        Tag::DrwT(id) => return Some(Word::Tile(id)),
+        Tag::DrwS(id) => return Some(Word::Sprite(id)),
+        Tag::DrwI(id) => return Some(Word::Item(id)),
+        Tag::Pal(pal) => state.palette = pal,
+        Tag::Ava(id) => state.avatar = id,
         Tag::Exit(room, x, y) => {
             state.room = room;
             state.pos_x = x;
@@ -101,8 +101,22 @@ fn eval_simple_expr(expr: SimpleExpr, state: &mut State) -> Val {
 
 fn eval_bin_op(op: BinOp, lhs: Val, rhs: Val) -> Val {
     match op {
-        BinOp::Mul => todo!(),
-        BinOp::Div => todo!(),
+        BinOp::Mul => match (lhs, rhs) {
+            (Val::I(a), Val::I(b)) => Val::I(a * b),
+            (Val::I(a), Val::F(b)) => Val::F(a as f32 * b),
+            (Val::F(a), Val::I(b)) => Val::F(a * b as f32),
+            (Val::F(a), Val::F(b)) => Val::F(a * b),
+            (Val::Undef, b) => b,
+            (a, _) => a,
+        },
+        BinOp::Div => match (lhs, rhs) {
+            (Val::I(a), Val::I(b)) => Val::I(a / b),
+            (Val::I(a), Val::F(b)) => Val::F(a as f32 / b),
+            (Val::F(a), Val::I(b)) => Val::F(a / b as f32),
+            (Val::F(a), Val::F(b)) => Val::F(a / b),
+            (Val::Undef, b) => b,
+            (a, _) => a,
+        },
         BinOp::Add => match (lhs, rhs) {
             (Val::I(a), Val::I(b)) => Val::I(a + b),
             (Val::I(a), Val::F(b)) => Val::F(a as f32 + b),
@@ -116,15 +130,60 @@ fn eval_bin_op(op: BinOp, lhs: Val, rhs: Val) -> Val {
             (Val::I(a), Val::I(b)) => Val::I(a - b),
             (Val::I(a), Val::F(b)) => Val::F(a as f32 - b),
             (Val::F(a), Val::I(b)) => Val::F(a - b as f32),
-            (Val::F(a), Val::F(b)) => Val::F(a + b),
+            (Val::F(a), Val::F(b)) => Val::F(a - b),
             (Val::Undef, b) => b,
             (a, _) => a,
         },
-        BinOp::Lt => todo!(),
-        BinOp::Gt => todo!(),
-        BinOp::Lte => todo!(),
-        BinOp::Gte => todo!(),
-        BinOp::Eq => todo!(),
+        BinOp::Lt => {
+            let res = match (lhs, rhs) {
+                (Val::I(a), Val::I(b)) => a < b,
+                (Val::I(a), Val::F(b)) => (a as f32) < b,
+                (Val::F(a), Val::I(b)) => a < b as f32,
+                (Val::F(a), Val::F(b)) => a < b,
+                _ => false,
+            };
+            Val::I(if res { 1 } else { 0 })
+        }
+        BinOp::Gt => {
+            let res = match (lhs, rhs) {
+                (Val::I(a), Val::I(b)) => a > b,
+                (Val::I(a), Val::F(b)) => a as f32 > b,
+                (Val::F(a), Val::I(b)) => a > b as f32,
+                (Val::F(a), Val::F(b)) => a > b,
+                _ => false,
+            };
+            Val::I(if res { 1 } else { 0 })
+        }
+        BinOp::Lte => {
+            let res = match (lhs, rhs) {
+                (Val::I(a), Val::I(b)) => a <= b,
+                (Val::I(a), Val::F(b)) => a as f32 <= b,
+                (Val::F(a), Val::I(b)) => a <= b as f32,
+                (Val::F(a), Val::F(b)) => a <= b,
+                _ => false,
+            };
+            Val::I(if res { 1 } else { 0 })
+        }
+        BinOp::Gte => {
+            let res = match (lhs, rhs) {
+                (Val::I(a), Val::I(b)) => a >= b,
+                (Val::I(a), Val::F(b)) => a as f32 >= b,
+                (Val::F(a), Val::I(b)) => a >= b as f32,
+                (Val::F(a), Val::F(b)) => a >= b,
+                _ => false,
+            };
+            Val::I(if res { 1 } else { 0 })
+        }
+        BinOp::Eq => {
+            let res = match (lhs, rhs) {
+                (Val::I(a), Val::I(b)) => a == b,
+                (Val::I(a), Val::F(b)) => a as f32 == b,
+                (Val::F(a), Val::I(b)) => a == b as f32,
+                (Val::F(a), Val::F(b)) => a == b,
+                _ => false,
+            };
+            Val::I(if res { 1 } else { 0 })
+        }
     }
 }
 
