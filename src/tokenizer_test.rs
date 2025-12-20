@@ -1,16 +1,19 @@
 use crate::*;
 
 #[test]
-fn test_tokenizer() {
-    use Tag::*;
-    use Token::*;
+fn test_tokenizer_text() {
     check("hello", vec![w("hello")]);
     check("  hello", vec![w("  hello")]);
     check("  hello ", vec![w("  hello ")]);
     check("hello world", vec![w("hello "), w("world")]);
     check("hello world!!!", vec![w("hello "), w("world!!!")]);
     check("    ", vec![w("    ")]);
+}
 
+#[test]
+fn test_tokenizer_tags() {
+    use Tag::*;
+    use Token::*;
     check("{br}", vec![OpenTag(Br)]);
     check("{ br}", vec![OpenTag(Br)]);
     check("{ br }", vec![OpenTag(Br)]);
@@ -65,7 +68,12 @@ fn test_tokenizer() {
         r#"{exit "hi", 3, 4}"#,
         vec![OpenTag(Exit("hi".to_string(), 3, 4))],
     );
+}
 
+#[test]
+fn test_tokenizer_assignment() {
+    use Tag::*;
+    use Token::*;
     let val = Val::S("hello world!".to_string());
     let expr = Expr::SimpleExpr(SimpleExpr::Val(val));
     check(

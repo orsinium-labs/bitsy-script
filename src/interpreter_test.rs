@@ -5,6 +5,14 @@ fn test_interpreter() {
     let (words, _) = run("hello");
     let exp = vec![Word::Text("hello".to_string(), TextEffect::None)];
     assert_eq!(words, exp);
+
+    let (words, _) = run("oh{br}hi");
+    let exp = vec![
+        Word::Text("oh".to_string(), TextEffect::None),
+        Word::LineBreak,
+        Word::Text("hi".to_string(), TextEffect::None),
+    ];
+    assert_eq!(words, exp);
 }
 
 fn run(t: &str) -> (Vec<Word>, State) {
