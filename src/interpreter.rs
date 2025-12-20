@@ -1,6 +1,7 @@
 use crate::*;
 use alloc::string::String;
 
+#[derive(Debug, PartialEq)]
 pub enum Word {
     Text(String, TextEffect),
     Sprite(ID),

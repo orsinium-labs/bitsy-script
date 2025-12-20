@@ -2,6 +2,8 @@
 extern crate alloc;
 
 mod interpreter;
+#[cfg(test)]
+mod interpreter_test;
 mod inventory;
 mod state;
 mod tokenizer;
