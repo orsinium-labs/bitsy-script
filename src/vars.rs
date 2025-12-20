@@ -1,17 +1,6 @@
 use crate::*;
 use alloc::string::String;
-use alloc::vec::Vec;
-
-#[derive(Default)]
-pub struct Vars {
-    items: Vec<Var>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-struct Var {
-    name: String,
-    val: Val,
-}
+use hashbrown::HashMap;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub enum Val {
@@ -22,43 +11,21 @@ pub enum Val {
     F(f32),
 }
 
+#[derive(Default)]
+pub struct Vars {
+    items: HashMap<String, Val>,
+}
+
 impl Vars {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn add(&mut self, name: String, v: Val) -> &Val {
-        for item in &mut self.items {
-            if item.name == name {
-                item.val = match (&item.val, &v) {
-                    (Val::I(a), Val::I(b)) => Val::I(a + b),
-                    (Val::I(a), Val::F(b)) => Val::F(*a as f32 + b),
-                    (Val::F(a), Val::I(b)) => Val::F(a + *b as f32),
-                    (Val::S(a), Val::S(b)) => Val::S(alloc::format!("{a}{b}")),
-                    (Val::F(a), Val::F(b)) => Val::F(a + b),
-                    _ => v,
-                };
-                return &item.val;
-            }
-        }
-        &Val::I(0)
-    }
-
     pub fn set(&mut self, name: String, v: Val) {
-        for item in &mut self.items {
-            if item.name == name {
-                item.val = v;
-                break;
-            }
-        }
+        self.items.insert(name, v);
     }
 
-    pub fn get(&self, name: String) -> &Val {
-        for item in &self.items {
-            if item.name == name {
-                return &item.val;
-            }
-        }
-        &Val::Undef
+    pub fn get(&self, name: &str) -> &Val {
+        self.items.get(name).unwrap_or(&Val::Undef)
     }
 }

@@ -13,6 +13,10 @@ fn test_interpreter() {
         Word::Text("hi".to_string(), TextEffect::None),
     ];
     assert_eq!(words, exp);
+
+    let (words, _) = run("{a = 14}{say a}");
+    let exp = vec![Word::Text("14".to_string(), TextEffect::None)];
+    assert_eq!(words, exp);
 }
 
 fn run(t: &str) -> (Vec<Word>, State) {

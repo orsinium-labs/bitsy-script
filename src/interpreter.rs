@@ -1,5 +1,7 @@
 use crate::*;
+use alloc::format;
 use alloc::string::String;
+use alloc::string::ToString;
 
 #[derive(Debug, PartialEq)]
 pub enum Word {
@@ -47,7 +49,11 @@ fn handle_open_tag(tag: Tag, state: &mut State) -> Option<Word> {
         Tag::Pg => return Some(Word::PageBreak),
         Tag::Eff(eff) => state.effect = eff,
         Tag::End => state.end = true,
-        Tag::SayVar(_) => todo!(),
+        Tag::SayVar(name) => {
+            let val = state.vars.get(&name);
+            let s = val_to_string(val);
+            return Some(Word::Text(s, state.effect));
+        }
         Tag::SayItem(_) => todo!(),
         Tag::DrwT(_) => todo!(),
         Tag::DrwS(_) => todo!(),
@@ -88,7 +94,7 @@ fn eval_expr(expr: Expr, state: &mut State) -> Val {
 
 fn eval_simple_expr(expr: SimpleExpr, state: &mut State) -> Val {
     match expr {
-        SimpleExpr::Var(name) => state.vars.get(name).clone(),
+        SimpleExpr::Var(name) => state.vars.get(&name).clone(),
         SimpleExpr::Val(val) => val,
     }
 }
@@ -119,5 +125,14 @@ fn eval_bin_op(op: BinOp, lhs: Val, rhs: Val) -> Val {
         BinOp::Lte => todo!(),
         BinOp::Gte => todo!(),
         BinOp::Eq => todo!(),
+    }
+}
+
+fn val_to_string(val: &Val) -> String {
+    match val {
+        Val::Undef => "0".to_string(),
+        Val::I(i) => format!("{i}"),
+        Val::S(s) => s.to_string(),
+        Val::F(f) => format!("{f}"),
     }
 }
