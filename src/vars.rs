@@ -51,12 +51,12 @@ impl Vars {
         }
     }
 
-    pub fn get(&self, name: String) -> &Val {
+    pub fn get(&self, name: String) -> Option<&Val> {
         for item in &self.items {
             if item.name == name {
-                return &item.val;
+                return Some(&item.val);
             }
         }
-        &Val::I(0)
+        None
     }
 }

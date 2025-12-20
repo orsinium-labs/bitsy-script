@@ -1,14 +1,9 @@
 use crate::*;
-use alloc::vec::Vec;
+use hashbrown::HashMap;
 
 #[derive(Default)]
 pub struct Inventory {
-    items: Vec<Item>,
-}
-
-struct Item {
-    id: ID,
-    qty: u8,
+    items: HashMap<ID, u16>,
 }
 
 impl Inventory {
@@ -16,32 +11,23 @@ impl Inventory {
         Self::default()
     }
 
-    pub fn put(&mut self, id: ID) -> u8 {
-        for item in &mut self.items {
-            if item.id == id {
-                item.qty = item.qty.saturating_add(1);
-                return item.qty;
-            }
-        }
-        0
+    pub fn put(&mut self, id: ID) -> u16 {
+        *self
+            .items
+            .entry(id)
+            .and_modify(|q| *q = q.saturating_add(1))
+            .or_insert(1)
     }
 
-    pub fn pop(&mut self, id: ID) -> u8 {
-        for item in &mut self.items {
-            if item.id == id {
-                item.qty = item.qty.saturating_sub(1);
-                return item.qty;
-            }
-        }
-        0
+    pub fn pop(&mut self, id: ID) -> u16 {
+        *self
+            .items
+            .entry(id)
+            .and_modify(|q| *q = q.saturating_sub(1))
+            .or_insert(1)
     }
 
-    pub fn get(&self, id: ID) -> u8 {
-        for item in &self.items {
-            if item.id == id {
-                return item.qty;
-            }
-        }
-        0
+    pub fn get(&self, id: ID) -> u16 {
+        self.items.get(&id).copied().unwrap_or_default()
     }
 }
