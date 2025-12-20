@@ -51,6 +51,8 @@ fn handle_open_tag(tag: Tag, state: &mut State) -> Option<Word> {
         Tag::End => state.end = true,
         Tag::Say(expr) => {
             let val = eval_expr(expr, state);
+            // TODO(@orsinium): String values can contain multiple words
+            // and even subnodes. We need to parse them with Tokenizer.
             let s = val_to_string(&val);
             return Some(Word::Text(s, state.effect));
         }

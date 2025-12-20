@@ -315,6 +315,10 @@ fn parse_exit_args(args: &str) -> (&str, u8, u8) {
 }
 
 fn unquote(v: &str) -> &str {
+    let n_quotes = v.chars().filter(|ch| *ch == '"').count();
+    if n_quotes != 2 {
+        return v;
+    }
     if v.starts_with('"') && v.ends_with('"') {
         let v = &v[1..];
         &v[..v.len() - 1]
