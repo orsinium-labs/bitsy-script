@@ -56,15 +56,20 @@ pub enum Tag {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     SimpleExpr(SimpleExpr),
-    Mul(SimpleExpr, SimpleExpr),
-    Div(SimpleExpr, SimpleExpr),
-    Add(SimpleExpr, SimpleExpr),
-    Sub(SimpleExpr, SimpleExpr),
-    Lt(SimpleExpr, SimpleExpr),
-    Gt(SimpleExpr, SimpleExpr),
-    Lte(SimpleExpr, SimpleExpr),
-    Gte(SimpleExpr, SimpleExpr),
-    Eq(SimpleExpr, SimpleExpr),
+    BinOp(BinOp, SimpleExpr, SimpleExpr),
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum BinOp {
+    Mul,
+    Div,
+    Add,
+    Sub,
+    Lt,
+    Gt,
+    Lte,
+    Gte,
+    Eq,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -237,21 +242,22 @@ fn parse_expr(args: &str) -> Expr {
         let left = parse_simple_expr(left);
         let right = parse_simple_expr(right);
         let op = op.trim_ascii();
-        match op {
-            "*" => Expr::Mul(left, right),
-            "/" => Expr::Div(left, right),
-            "+" => Expr::Add(left, right),
-            "-" => Expr::Sub(left, right),
-            "<" => Expr::Lt(left, right),
-            ">" => Expr::Gt(left, right),
-            "<=" => Expr::Lte(left, right),
-            ">=" => Expr::Gte(left, right),
-            "==" => Expr::Eq(left, right),
+        let op = match op {
+            "*" => BinOp::Mul,
+            "/" => BinOp::Div,
+            "+" => BinOp::Add,
+            "-" => BinOp::Sub,
+            "<" => BinOp::Lt,
+            ">" => BinOp::Gt,
+            "<=" => BinOp::Lte,
+            ">=" => BinOp::Gte,
+            "==" => BinOp::Eq,
             _ => {
                 let val = Val::S(args.to_string());
-                Expr::SimpleExpr(SimpleExpr::Val(val))
+                return Expr::SimpleExpr(SimpleExpr::Val(val));
             }
-        }
+        };
+        Expr::BinOp(op, left, right)
     } else {
         let val = Val::S(args.to_string());
         Expr::SimpleExpr(SimpleExpr::Val(val))

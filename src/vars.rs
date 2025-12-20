@@ -13,8 +13,10 @@ struct Var {
     val: Val,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub enum Val {
+    #[default]
+    Undef,
     I(i16),
     S(String),
     F(f32),
@@ -51,12 +53,12 @@ impl Vars {
         }
     }
 
-    pub fn get(&self, name: String) -> Option<&Val> {
+    pub fn get(&self, name: String) -> &Val {
         for item in &self.items {
             if item.name == name {
-                return Some(&item.val);
+                return &item.val;
             }
         }
-        None
+        &Val::Undef
     }
 }
