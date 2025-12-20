@@ -1,7 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 extern crate alloc;
 
-mod dialog;
+mod interpreter;
 mod inventory;
 mod state;
 mod tokenizer;
@@ -9,7 +9,7 @@ mod tokenizer;
 mod tokenizer_test;
 mod vars;
 
-pub use dialog::*;
+pub use interpreter::*;
 pub use inventory::*;
 pub use state::*;
 pub use tokenizer::*;

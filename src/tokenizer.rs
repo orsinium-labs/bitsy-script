@@ -6,9 +6,10 @@ use core::str::Chars;
 
 pub type ID = String;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub enum TextEffect {
     /// No effects.
+    #[default]
     None,
     /// {wvy} text in tags waves up and down.
     Wavy,
