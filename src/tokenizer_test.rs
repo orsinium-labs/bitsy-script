@@ -79,11 +79,24 @@ fn test_tokenizer() {
     let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::I(-14)));
     check("{a = -14}", vec![OpenTag(Set("a".to_string(), expr))]);
 
+    #[allow(clippy::approx_constant)]
+    let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::F(3.14)));
+    check("{a = 3.14}", vec![OpenTag(Set("a".to_string(), expr))]);
+
     let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::I(1)));
     check("{a = true}", vec![OpenTag(Set("a".to_string(), expr))]);
 
     let expr = Expr::SimpleExpr(SimpleExpr::Val(Val::S("hi".to_string())));
     check(r#"{a = "hi"}"#, vec![OpenTag(Set("a".to_string(), expr))]);
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Var("hi".to_string()));
+    check(r#"{a = hi}"#, vec![OpenTag(Set("a".to_string(), expr))]);
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Var("hi_mark".to_string()));
+    check(
+        r#"{a = hi_mark}"#,
+        vec![OpenTag(Set("a".to_string(), expr))],
+    );
 }
 
 fn w(w: &str) -> Token {

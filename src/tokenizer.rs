@@ -268,6 +268,9 @@ fn parse_simple_expr(part: &str) -> SimpleExpr {
     if let Ok(i) = part.parse::<i16>() {
         return SimpleExpr::Val(Val::I(i));
     }
+    if let Ok(f) = part.parse::<f32>() {
+        return SimpleExpr::Val(Val::F(f));
+    }
     if part.starts_with('"') {
         return SimpleExpr::Val(Val::S(unquote(part).to_string()));
     }
@@ -278,7 +281,21 @@ fn parse_simple_expr(part: &str) -> SimpleExpr {
 }
 
 fn is_var(part: &str) -> bool {
-    todo!()
+    let mut first = true;
+    for ch in part.chars() {
+        if !first && ch.is_ascii_digit() {
+            return false;
+        }
+        first = false;
+        if ch.is_ascii_alphanumeric() {
+            continue;
+        }
+        if ch == '_' {
+            continue;
+        }
+        return false;
+    }
+    true
 }
 
 fn parse_exit_args(args: &str) -> (&str, u8, u8) {
