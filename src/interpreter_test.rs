@@ -17,6 +17,14 @@ fn test_interpreter() {
     let (words, _) = run("{a = 14}{say a}");
     let exp = vec![Word::Text("14".to_string(), TextEffect::None)];
     assert_eq!(words, exp);
+
+    let (words, _) = run("{say 6 + 7}");
+    let exp = vec![Word::Text("13".to_string(), TextEffect::None)];
+    assert_eq!(words, exp);
+
+    let (words, _) = run("{say 6 - 9}");
+    let exp = vec![Word::Text("-3".to_string(), TextEffect::None)];
+    assert_eq!(words, exp);
 }
 
 fn run(t: &str) -> (Vec<Word>, State) {

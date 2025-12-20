@@ -50,12 +50,13 @@ fn test_tokenizer_tags() {
     );
     check("{clr1}", vec![OpenTag(Eff(TextEffect::Color(1)))]);
     check("{clr 1}", vec![OpenTag(Eff(TextEffect::Color(2)))]);
-    check("{say hi}", vec![OpenTag(SayVar("hi".to_string()))]);
-    check("{ say  hi }", vec![OpenTag(SayVar("hi".to_string()))]);
-    check(
-        r#"{say {item "cat"}}"#,
-        vec![OpenTag(SayItem("cat".to_string()))],
-    );
+
+    let expr = Expr::SimpleExpr(SimpleExpr::Var("hi".to_string()));
+    check("{say hi}", vec![OpenTag(Say(expr.clone()))]);
+    check("{ say  hi }", vec![OpenTag(Say(expr))]);
+    let expr = Expr::SimpleExpr(SimpleExpr::Item("cat".to_string()));
+    check(r#"{say {item "cat"}}"#, vec![OpenTag(Say(expr))]);
+
     check(
         r#"{exit "hi,3,4"}"#,
         vec![OpenTag(Exit("hi".to_string(), 3, 4))],

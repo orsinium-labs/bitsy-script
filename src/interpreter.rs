@@ -49,12 +49,11 @@ fn handle_open_tag(tag: Tag, state: &mut State) -> Option<Word> {
         Tag::Pg => return Some(Word::PageBreak),
         Tag::Eff(eff) => state.effect = eff,
         Tag::End => state.end = true,
-        Tag::SayVar(name) => {
-            let val = state.vars.get(&name);
-            let s = val_to_string(val);
+        Tag::Say(expr) => {
+            let val = eval_expr(expr, state);
+            let s = val_to_string(&val);
             return Some(Word::Text(s, state.effect));
         }
-        Tag::SayItem(_) => todo!(),
         Tag::DrwT(_) => todo!(),
         Tag::DrwS(_) => todo!(),
         Tag::DrwI(_) => todo!(),
@@ -95,6 +94,7 @@ fn eval_expr(expr: Expr, state: &mut State) -> Val {
 fn eval_simple_expr(expr: SimpleExpr, state: &mut State) -> Val {
     match expr {
         SimpleExpr::Var(name) => state.vars.get(&name).clone(),
+        SimpleExpr::Item(name) => Val::I(state.inventory.get(&name) as i16),
         SimpleExpr::Val(val) => val,
     }
 }

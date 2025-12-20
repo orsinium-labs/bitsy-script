@@ -31,10 +31,8 @@ pub enum Tag {
     Eff(TextEffect),
     /// End the game.
     End,
-    /// Print the variable value.
-    SayVar(String),
-    // say the item quantity in inventory.
-    SayItem(String),
+    /// Print the result of expression.
+    Say(Expr),
     /// Draw tile.
     DrwT(ID),
     /// Draw sprite.
@@ -75,6 +73,7 @@ pub enum BinOp {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SimpleExpr {
     Var(String),
+    Item(String),
     Val(Val),
 }
 
@@ -188,16 +187,7 @@ fn parse_tag_with_args(name: &str, args: &str) -> Tag {
             "2" => Tag::Eff(TextEffect::Color(3)),
             _ => Tag::Eff(TextEffect::Color(1)),
         },
-        "say" | "print" => {
-            if let Some(args) = args.strip_prefix("{item") {
-                let args = args.strip_suffix('}').unwrap_or(args);
-                let args = args.trim_ascii();
-                let args = unquote(args);
-                Tag::SayItem(args.to_string())
-            } else {
-                Tag::SayVar(args.to_string())
-            }
-        }
+        "say" | "print" => Tag::Say(parse_expr(args)),
         "drwt" | "printTile" => Tag::DrwT(unquote(args).to_string()),
         "drws" | "printSprite" => Tag::DrwS(unquote(args).to_string()),
         "drwi" | "printItem" => Tag::DrwI(unquote(args).to_string()),
@@ -235,6 +225,7 @@ fn parse_assign(name: &str, args: &str) -> Tag {
 
 fn parse_expr(args: &str) -> Expr {
     let args = args.trim_ascii();
+    let args = args.replace("item ", "item@");
     let parts: Vec<_> = args.split_ascii_whitespace().collect();
     if let Some(part) = unwrap_vec_1(&parts) {
         Expr::SimpleExpr(parse_simple_expr(part))
@@ -266,6 +257,12 @@ fn parse_expr(args: &str) -> Expr {
 
 fn parse_simple_expr(part: &str) -> SimpleExpr {
     let part = part.trim_ascii();
+    if let Some(name) = part.strip_prefix("{item@") {
+        let name = name.strip_suffix('}').unwrap_or(name);
+        let name = name.trim_ascii();
+        let name = unquote(name);
+        return SimpleExpr::Item(name.to_string());
+    }
     if part == "true" {
         return SimpleExpr::Val(Val::I(1));
     }

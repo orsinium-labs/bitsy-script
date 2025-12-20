@@ -27,7 +27,7 @@ impl Inventory {
             .or_insert(1)
     }
 
-    pub fn get(&self, id: ID) -> u16 {
-        self.items.get(&id).copied().unwrap_or_default()
+    pub fn get(&self, id: &ID) -> u16 {
+        self.items.get(id).copied().unwrap_or_default()
     }
 }
