@@ -237,22 +237,26 @@ fn parse_bin_op(args: &str) -> Option<Expr> {
     let left = parse_simple_expr(left);
     let right = parse_simple_expr(right);
     let op = op.trim_ascii();
-    let op = match op {
-        "*" => BinOp::Mul,
-        "/" => BinOp::Div,
-        "+" => BinOp::Add,
-        "-" => BinOp::Sub,
-        "<" => BinOp::Lt,
-        ">" => BinOp::Gt,
-        "<=" => BinOp::Lte,
-        ">=" => BinOp::Gte,
-        "==" => BinOp::Eq,
-        _ => {
-            let val = Val::S(args.to_string());
-            return Some(Expr::SimpleExpr(SimpleExpr::Val(val)));
-        }
+    let Some(op) = parse_operator(op) else {
+        let val = Val::S(args.to_string());
+        return Some(Expr::SimpleExpr(SimpleExpr::Val(val)));
     };
     Some(Expr::BinOp(op, left, right))
+}
+
+fn parse_operator(op: &str) -> Option<BinOp> {
+    match op {
+        "*" => Some(BinOp::Mul),
+        "/" => Some(BinOp::Div),
+        "+" => Some(BinOp::Add),
+        "-" => Some(BinOp::Sub),
+        "<" => Some(BinOp::Lt),
+        ">" => Some(BinOp::Gt),
+        "<=" => Some(BinOp::Lte),
+        ">=" => Some(BinOp::Gte),
+        "==" => Some(BinOp::Eq),
+        _ => None,
+    }
 }
 
 /// Try splitting the input expression at the first binary operator.

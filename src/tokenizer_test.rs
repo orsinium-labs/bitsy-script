@@ -106,6 +106,16 @@ fn test_tokenizer_assignment() {
         r#"{a = hi_mark}"#,
         vec![OpenTag(Set("a".to_string(), expr))],
     );
+
+    let a = SimpleExpr::Val(Val::I(14));
+    let b = SimpleExpr::Val(Val::I(15));
+    let expr = Expr::BinOp(BinOp::Add, a, b);
+    check("{say 14 + 15}", vec![OpenTag(Say(expr))]);
+
+    let a = SimpleExpr::Val(Val::I(-4));
+    let b = SimpleExpr::Val(Val::I(5));
+    let expr = Expr::BinOp(BinOp::Add, a, b);
+    check("{say -4+5}", vec![OpenTag(Say(expr))]);
 }
 
 fn w(w: &str) -> Token {
