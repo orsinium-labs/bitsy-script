@@ -1,7 +1,6 @@
 use crate::Val;
 use alloc::string::String;
 use alloc::string::ToString;
-use alloc::vec::Vec;
 use core::str::Chars;
 
 pub type ID = String;
@@ -225,39 +224,69 @@ fn parse_assign(name: &str, args: &str) -> Tag {
 
 fn parse_expr(args: &str) -> Expr {
     let args = args.trim_ascii();
-    let args = args.replace("item ", "item@");
-    let parts: Vec<_> = args.split_ascii_whitespace().collect();
-    if let Some(part) = unwrap_vec_1(&parts) {
-        Expr::SimpleExpr(parse_simple_expr(part))
-    } else if let Some((left, op, right)) = unwrap_vec_3(&parts) {
-        let left = parse_simple_expr(left);
-        let right = parse_simple_expr(right);
-        let op = op.trim_ascii();
-        let op = match op {
-            "*" => BinOp::Mul,
-            "/" => BinOp::Div,
-            "+" => BinOp::Add,
-            "-" => BinOp::Sub,
-            "<" => BinOp::Lt,
-            ">" => BinOp::Gt,
-            "<=" => BinOp::Lte,
-            ">=" => BinOp::Gte,
-            "==" => BinOp::Eq,
-            _ => {
-                let val = Val::S(args.to_string());
-                return Expr::SimpleExpr(SimpleExpr::Val(val));
-            }
-        };
-        Expr::BinOp(op, left, right)
+    if let Some(expr) = parse_bin_op(args) {
+        expr
     } else {
-        let val = Val::S(args.to_string());
-        Expr::SimpleExpr(SimpleExpr::Val(val))
+        Expr::SimpleExpr(parse_simple_expr(args))
     }
+}
+
+/// Try parsing the expression as a binary operation.
+fn parse_bin_op(args: &str) -> Option<Expr> {
+    let (left, op, right) = split_bin_op(args)?;
+    let left = parse_simple_expr(left);
+    let right = parse_simple_expr(right);
+    let op = op.trim_ascii();
+    let op = match op {
+        "*" => BinOp::Mul,
+        "/" => BinOp::Div,
+        "+" => BinOp::Add,
+        "-" => BinOp::Sub,
+        "<" => BinOp::Lt,
+        ">" => BinOp::Gt,
+        "<=" => BinOp::Lte,
+        ">=" => BinOp::Gte,
+        "==" => BinOp::Eq,
+        _ => {
+            let val = Val::S(args.to_string());
+            return Some(Expr::SimpleExpr(SimpleExpr::Val(val)));
+        }
+    };
+    Some(Expr::BinOp(op, left, right))
+}
+
+/// Try splitting the input expression at the first binary operator.
+fn split_bin_op(args: &str) -> Option<(&str, &str, &str)> {
+    let mut prev_op = false;
+    let mut found_term = false;
+    for (i, ch) in args.char_indices() {
+        let cur_op = is_bin_op(ch);
+        if found_term && prev_op {
+            let (left, right) = args.split_at(i);
+            let op_len = if cur_op { 2 } else { 1 };
+            let (left, op) = left.split_at(i - op_len);
+            return Some((left, op, right));
+        }
+        if i != 0 && ch != ' ' {
+            found_term = true;
+        }
+        prev_op = cur_op;
+    }
+    None
+}
+
+/// Check if the given character is a binary operator.
+///
+/// Keep in mind that some operators require 2 characters,
+/// so two consecutive characters should be checked to correctly
+/// select the operator.
+fn is_bin_op(ch: char) -> bool {
+    matches!(ch, '*' | '/' | '+' | '-' | '<' | '>' | '=')
 }
 
 fn parse_simple_expr(part: &str) -> SimpleExpr {
     let part = part.trim_ascii();
-    if let Some(name) = part.strip_prefix("{item@") {
+    if let Some(name) = part.strip_prefix("{item ") {
         let name = name.strip_suffix('}').unwrap_or(name);
         let name = name.trim_ascii();
         let name = unquote(name);
@@ -284,6 +313,7 @@ fn parse_simple_expr(part: &str) -> SimpleExpr {
     SimpleExpr::Val(Val::S(part.to_string()))
 }
 
+/// Check if the given string is a valid variable name.
 fn is_var(part: &str) -> bool {
     let mut first = true;
     for ch in part.chars() {
@@ -302,6 +332,9 @@ fn is_var(part: &str) -> bool {
     true
 }
 
+/// Parse arguments of the `exit` function.
+///
+/// Old form: `{exit "id,2,3"}`. New form: `{exit "id",2,3}`.
 fn parse_exit_args(args: &str) -> (&str, u8, u8) {
     let args = unquote(args);
     let (room, args) = args.split_once(',').unwrap_or((args, "0,0"));
@@ -314,6 +347,7 @@ fn parse_exit_args(args: &str) -> (&str, u8, u8) {
     (room, x, y)
 }
 
+/// Remove double quotes around the text.
 fn unquote(v: &str) -> &str {
     let n_quotes = v.chars().filter(|ch| *ch == '"').count();
     if n_quotes != 2 {
@@ -325,18 +359,4 @@ fn unquote(v: &str) -> &str {
     } else {
         v
     }
-}
-
-fn unwrap_vec_1<'a>(items: &[&'a str]) -> Option<&'a str> {
-    if items.len() != 1 {
-        return None;
-    }
-    Some(items[0])
-}
-
-fn unwrap_vec_3<'a>(items: &[&'a str]) -> Option<(&'a str, &'a str, &'a str)> {
-    if items.len() != 3 {
-        return None;
-    }
-    Some((items[0], items[1], items[2]))
 }
