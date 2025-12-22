@@ -114,7 +114,13 @@ impl<'a> Iterator for Tokenizer<'a> {
             };
             word.push(ch);
             match ch {
-                '\n' => return Some(Token::OpenTag(Tag::Br)),
+                '\n' => {
+                    if open_tags == 0 && found_letter {
+                        self.stash = Some('\n');
+                        break;
+                    }
+                    return Some(Token::OpenTag(Tag::Br));
+                }
                 '{' => {
                     if open_tags == 0 && found_letter {
                         self.stash = Some('{');
