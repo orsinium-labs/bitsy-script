@@ -13,7 +13,7 @@ pub enum Val {
 }
 
 impl Val {
-    pub fn from_str(&self, s: &str) -> Val {
+    pub fn new(s: &str) -> Val {
         let s = s.trim_ascii();
         if s == "true" {
             return Val::I(1);
