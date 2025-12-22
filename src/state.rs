@@ -3,7 +3,7 @@ use alloc::string::String;
 
 type ID = String;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct State {
     pub room: ID,
     pub pos_x: u8,

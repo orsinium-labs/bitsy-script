@@ -1,7 +1,7 @@
 use crate::*;
 use hashbrown::HashMap;
 
-#[derive(Default)]
+#[derive(Default, Clone, Debug)]
 pub struct Inventory {
     items: HashMap<ID, u16>,
 }
