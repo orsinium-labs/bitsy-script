@@ -211,6 +211,7 @@ fn parse_tag_without_args(name: &str) -> Tag {
     match name {
         "br" => Tag::Br,
         "pg" => Tag::Pg,
+        "clr" => Tag::Eff(TextEffect::Color(0)),
         "clr1" => Tag::Eff(TextEffect::Color(1)),
         "clr2" => Tag::Eff(TextEffect::Color(2)),
         "clr3" => Tag::Eff(TextEffect::Color(3)),
