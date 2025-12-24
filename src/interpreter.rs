@@ -47,7 +47,13 @@ fn handle_open_tag(tag: Tag, state: &mut State) -> Option<Word> {
     match tag {
         Tag::Br => return Some(Word::LineBreak),
         Tag::Pg => return Some(Word::PageBreak),
-        Tag::Eff(eff) => state.effect = eff,
+        Tag::Eff(eff) => {
+            if state.effect != TextEffect::None {
+                state.effect = TextEffect::None;
+            } else {
+                state.effect = eff
+            }
+        }
         Tag::End => state.end = true,
         Tag::Say(expr) => {
             let val = eval_expr(expr, state);
